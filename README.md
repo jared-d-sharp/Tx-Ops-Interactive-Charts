@@ -49,9 +49,9 @@ text
 </ul>
 ```
 
-Replace 
-• dashboard-name with the exact folder name you created in Step 2
-• Your Dashboard Title with a descriptive, user-friendly title for display
+Replace\ 
+• dashboard-name with the exact folder name you created in Step 2\
+• Your Dashboard Title with a descriptive, user-friendly title for display\
 
 ```
 text
@@ -70,81 +70,81 @@ text
 
 ### Step 7: Access Your New Dashboard
 1. Wait 2-3 minutes for GitHub Pages to rebuild your site
-• Your new dashboard will be at: https://yourusername.github.io/repository-name/dashboard-name/
-• Your landing page is at: https://yourusername.github.io/repository-name/
+• Your new dashboard will be at: https://yourusername.github.io/repository-name/dashboard-name/\
+• Your landing page is at: https://yourusername.github.io/repository-name/\
 
 ## 📁 Repository Structure
-text
-repository-name/
-├── index.html                    (landing page with links)
-├── inhbe-dio/
-│   └── index.html               (INHBE DIO dashboard)
-├── sales-analysis/
-│   └── index.html               (sales dashboard)
-└── customer-metrics/
-    └── index.html               (customer dashboard)
+text\
+repository-name/\
+├── index.html                    (landing page with links)\
+├── inhbe-dio/\
+│   └── index.html               (INHBE DIO dashboard)\
+├── sales-analysis/\
+│   └── index.html               (sales dashboard)\
+└── customer-metrics/\
+    └── index.html               (customer dashboard)\
 
 
 # 💡 Best Practices
 
 ## Naming Conventions:
-✅ Use lowercase: sales-report
-✅ Use hyphens: q4-metrics
-✅ Be descriptive: customer-churn-analysis
-✅ Keep short: 2-4 words max
-❌ No spaces: sales report
-❌ No uppercase: Sales-Report
-❌ No underscores: sales_report
+✅ Use lowercase: sales-report\
+✅ Use hyphens: q4-metrics\
+✅ Be descriptive: customer-churn-analysis\
+✅ Keep short: 2-4 words max\
+❌ No spaces: sales report\
+❌ No uppercase: Sales-Report\
+❌ No underscores: sales_report\
 
 ## File Naming:
-• Always name dashboard files index.html (lowercase)
-• Creates clean URLs: /sales-dashboard/ instead of /sales-dashboard.html
+• Always name dashboard files index.html (lowercase)\
+• Creates clean URLs: /sales-dashboard/ instead of /sales-dashboard.html\
 
 ## 🔧 Troubleshooting
-• 404 Error When Accessing Dashboard:
-• Wait 5-10 minutes for GitHub Pages to rebuild
-• Verify file is named index.html (lowercase)
-• Check folder structure matches URL exactly
-• Ensure repository is Public
-• Clear browser cache or use incognito mode
-• Hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
-• Link on Landing Page Doesn't Work:
-• Verify href matches folder name exactly (case-sensitive)
-• Include trailing slash: href="folder-name/" not href="folder-name"
-• Check for typos in folder name and link
-• Ensure dashboard folder exists in repository
-• Changes Not Showing Up:
-• Wait 2-3 minutes for automatic rebuild
-• Check deployment status in Actions tab (look for green checkmark)
-• Hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
-• Try incognito/private browsing mode
-• Verify changes were committed (check file on GitHub)
+• 404 Error When Accessing Dashboard:\
+• Wait 5-10 minutes for GitHub Pages to rebuild\
+• Verify file is named index.html (lowercase)\
+• Check folder structure matches URL exactly\
+• Ensure repository is Public\
+• Clear browser cache or use incognito mode\
+• Hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)\
+• Link on Landing Page Doesn't Work:\
+• Verify href matches folder name exactly (case-sensitive)\
+• Include trailing slash: href="folder-name/" not href="folder-name"\
+• Check for typos in folder name and link\
+• Ensure dashboard folder exists in repository\
+• Changes Not Showing Up:\
+• Wait 2-3 minutes for automatic rebuild\
+• Check deployment status in Actions tab (look for green checkmark)\
+• Hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)\
+• Try incognito/private browsing mode\
+• Verify changes were committed (check file on GitHub)\
 
 ## 🔍 Checking Deployment Status
 ### Method 1: Actions Tab
-• Click "Actions" tab at top of repository
-• Look for "pages build and deployment" workflow
-• Check status:
-🟡 Yellow circle = Building (wait)
-✅ Green checkmark = Deployed
-❌ Red X = Failed (click for details)
+• Click "Actions" tab at top of repository\
+• Look for "pages build and deployment" workflow\
+• Check status:\
+🟡 Yellow circle = Building (wait)\
+✅ Green checkmark = Deployed\
+❌ Red X = Failed (click for details)\
 
 ### Method 2: Deployments Section
-• Look for "Deployments" in right sidebar of repository main page
-• Click "github-pages"
-• View deployment history
-• Click "View deployment" to visit live site
+• Look for "Deployments" in right sidebar of repository main page\
+• Click "github-pages"\
+• View deployment history\
+• Click "View deployment" to visit live site\
 
 ## ✅ Quick Checklist
-• Created new folder: dashboard-name/index.html
-• Used lowercase letters and hyphens
-• Pasted complete HTML content
-• Committed dashboard file
-• Opened index.html on repository
-• Added link in <ul class="dashboard-list"> section
-• Link href matches folder name with trailing slash
-• Link text is descriptive
-• Committed landing page changes
-• Waited 2-3 minutes
-• Tested dashboard URL
-• Verified link from landing page
+• Created new folder: dashboard-name/index.html\
+• Used lowercase letters and hyphens\
+• Pasted complete HTML content\
+• Committed dashboard file\
+• Opened index.html on repository\
+• Added link in <ul class="dashboard-list"> section\
+• Link href matches folder name with trailing slash\
+• Link text is descriptive\
+• Committed landing page changes\
+• Waited 2-3 minutes\
+• Tested dashboard URL\
+• Verified link from landing page\
