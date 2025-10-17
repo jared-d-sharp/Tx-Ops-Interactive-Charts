@@ -141,7 +141,7 @@ repository-name/\
 • Pasted complete HTML content\
 • Committed dashboard file\
 • Opened index.html on repository\
-• Added link in <ul class="dashboard-list"> section\
+• Added link in \<ul class="dashboard-list"> section\
 • Link href matches folder name with trailing slash\
 • Link text is descriptive\
 • Committed landing page changes\
