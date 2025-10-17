@@ -86,7 +86,8 @@ repository-name/
 └── customer-metrics/
     └── index.html               (customer dashboard)
 
-#💡 Best Practices
+
+# 💡 Best Practices
 
 ## Naming Conventions:
 ✅ Use lowercase: sales-report
