@@ -1,6 +1,5 @@
-# 📊 Adding New Dashboards to Your Repository
-
-This guide explains how to add new interactive Plotly dashboards to your existing GitHub Pages repository.
+# 📊 Adding New Interactive Charts to Your Repository
+This guide explains how to add new interactive Plotly dashboards to your existing GitHub Pages repository     <span style="color:blue;">**[[Hyperlink](https://jared-d-sharp.github.io/Tx-Ops-Interactive-Charts/)]**</span>
 
 ## 🚀 Step-by-Step Instructions
 
