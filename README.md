@@ -2,8 +2,6 @@
 
 This guide explains how to add new interactive Plotly dashboards to your existing GitHub Pages repository.
 
----
-
 ## 🚀 Step-by-Step Instructions
 
 ### Step 1: Navigate to Your Repository
