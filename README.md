@@ -75,7 +75,7 @@ text
 • Your new dashboard will be at: https://yourusername.github.io/repository-name/dashboard-name/
 • Your landing page is at: https://yourusername.github.io/repository-name/
 
-# 📁 Repository Structure
+## 📁 Repository Structure
 text
 repository-name/
 ├── index.html                    (landing page with links)
