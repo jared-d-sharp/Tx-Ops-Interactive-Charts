@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INHBE-DIO Metabolic Study Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: white;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: row;
+            flex: 1;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 25px;
+            border-right: 2px solid #e0e0e0;
+            width: 400px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            max-height: calc(100vh - 140px);
+        }
+        
+        .control-section {
+            margin-bottom: 25px;
+        }
+        
+        .control-section h3 {
+            font-size: 15px;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-selector {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 14px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .metric-selector:hover {
+            border-color: #667eea;
+        }
+        
+        .metric-selector:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .group-controls {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        
+        .group-controls:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .group-header {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-size: 13px;
+        }
+        
+        .control-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .control-row label {
+            font-size: 12px;
+            color: #666;
+            min-width: 80px;
+        }
+        
+        .control-row input[type="text"] {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .control-row input[type="color"] {
+            width: 50px;
+            height: 32px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .control-row select {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .slider-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .slider-container label {
+            font-size: 12px;
+            color: #666;
+            min-width: 100px;
+        }
+        
+        .slider-container input[type="range"] {
+            flex: 1;
+        }
+        
+        .slider-container .value-display {
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+            min-width: 50px;
+            text-align: right;
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: #ddd;
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #667eea;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #667eea;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+        }
+        
+        .axis-controls {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .axis-controls h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .axis-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+        
+        .axis-row label {
+            font-size: 12px;
+            color: #666;
+            min-width: 40px;
+        }
+        
+        .axis-row input[type="number"] {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+        }
+        
+        .chart-container {
+            flex: 1;
+            padding: 25px;
+            background: white;
+        }
+        
+        #plot {
+            width: 100%;
+            height: calc(100vh - 180px);
+        }
+        
+        .error-message {
+            color: #d32f2f;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .controls {
+                width: 100%;
+                max-height: none;
+                border-right: none;
+                border-bottom: 2px solid #e0e0e0;
+            }
+            
+            #plot {
+                height: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>INHBE-DIO Metabolic Study Dashboard</h1>
+            <p>Interactive visualization of treatment group metabolic data</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="controls">
+                <div class="control-section">
+                    <h3>Metric Selection</h3>
+                    <select id="metricSelector" class="metric-selector">
+                        <option value="Body weight (g)">Body weight (g)</option>
+                        <option value="Food intake (g/day/mouse)">Food intake (g/day/mouse)</option>
+                        <option value="Water intake (mL/day/mouse)">Water intake (mL/day/mouse)</option>
+                        <option value="Fat mass (g)">Fat mass (g)</option>
+                        <option value="Lean mass (g)">Lean mass (g)</option>
+                        <option value="% Body fat">% Body fat</option>
+                    </select>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Font Sizes</h3>
+                    <div class="slider-container">
+                        <label>Chart Title:</label>
+                        <input type="range" id="chartTitleSize" min="10" max="32" step="1" value="18">
+                        <span class="value-display" id="chartTitleSizeValue">18px</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>X-Axis Title:</label>
+                        <input type="range" id="xAxisTitleSize" min="8" max="24" step="1" value="14">
+                        <span class="value-display" id="xAxisTitleSizeValue">14px</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Y-Axis Title:</label>
+                        <input type="range" id="yAxisTitleSize" min="8" max="24" step="1" value="14">
+                        <span class="value-display" id="yAxisTitleSizeValue">14px</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>X-Axis Labels:</label>
+                        <input type="range" id="xAxisLabelsSize" min="8" max="20" step="1" value="12">
+                        <span class="value-display" id="xAxisLabelsSizeValue">12px</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Y-Axis Labels:</label>
+                        <input type="range" id="yAxisLabelsSize" min="8" max="20" step="1" value="12">
+                        <span class="value-display" id="yAxisLabelsSizeValue">12px</span>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Global Appearance</h3>
+                    <div class="slider-container">
+                        <label>Line Width:</label>
+                        <input type="range" id="globalLineWidth" min="0.5" max="8" step="0.25" value="2.0">
+                        <span class="value-display" id="globalLineWidthValue">2.0px</span>
+                    </div>
+                    <div class="slider-container">
+                        <label>Marker Size:</label>
+                        <input type="range" id="markerSize" min="3" max="15" step="1" value="7">
+                        <span class="value-display" id="markerSizeValue">7px</span>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Group Controls</h3>
+                    <div id="groupControlsContainer"></div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Axis Ranges</h3>
+                    <div class="axis-controls">
+                        <h4>X-Axis (Days)</h4>
+                        <div class="axis-row">
+                            <label>Min:</label>
+                            <input type="number" id="xMin" placeholder="Auto">
+                        </div>
+                        <div class="axis-row">
+                            <label>Max:</label>
+                            <input type="number" id="xMax" placeholder="Auto">
+                        </div>
+                        <div class="button-group">
+                            <button class="btn-primary" onclick="applyXRange()">Apply</button>
+                            <button class="btn-secondary" onclick="resetXRange()">Reset</button>
+                        </div>
+                    </div>
+                    
+                    <div class="axis-controls">
+                        <h4>Y-Axis</h4>
+                        <div class="axis-row">
+                            <label>Min:</label>
+                            <input type="number" id="yMin" placeholder="Auto">
+                        </div>
+                        <div class="axis-row">
+                            <label>Max:</label>
+                            <input type="number" id="yMax" placeholder="Auto">
+                        </div>
+                        <div class="button-group">
+                            <button class="btn-primary" onclick="applyYRange()">Apply</button>
+                            <button class="btn-secondary" onclick="resetYRange()">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div id="plot"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Embedded data
+        const allData = {
+        "Body weight (g)": {
+                "Group 10: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                3,
+                                6
+                        ],
+                        "means": [
+                                53.22,
+                                48.48333333,
+                                46.55
+                        ],
+                        "sems": [
+                                1.4,
+                                1.345465636,
+                                1.72
+                        ]
+                },
+                "Group 11: STD": {
+                        "days": [
+                                -1,
+                                3,
+                                6
+                        ],
+                        "means": [
+                                35.44,
+                                36.18,
+                                35.44
+                        ],
+                        "sems": [
+                                0.64,
+                                0.780640762,
+                                0.780640762
+                        ]
+                },
+                "Group 1: HFD": {
+                        "days": [
+                                -1,
+                                3,
+                                6
+                        ],
+                        "means": [
+                                52.55,
+                                52.7875,
+                                53.09
+                        ],
+                        "sems": [
+                                0.8,
+                                0.638479639,
+                                0.67
+                        ]
+                },
+                "Group 2: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                3,
+                                6
+                        ],
+                        "means": [
+                                52.88,
+                                53.13333333,
+                                53.22
+                        ],
+                        "sems": [
+                                0.66,
+                                0.797356744,
+                                0.65
+                        ]
+                },
+                "Group 3: 0.12 mg/kg": {
+                        "days": [
+                                -1,
+                                3,
+                                6
+                        ],
+                        "means": [
+                                52.82,
+                                47.91666667,
+                                45.15
+                        ],
+                        "sems": [
+                                1.17,
+                                1.187831825,
+                                0.42
+                        ]
+                },
+                "Group 4: 0.04 mg/kg": {
+                        "days": [
+                                -1,
+                                3,
+                                6
+                        ],
+                        "means": [
+                                53.0,
+                                48.03333333,
+                                46.13
+                        ],
+                        "sems": [
+                                0.59,
+                                1.090157991,
+                                1.68
+                        ]
+                },
+                "Group 5: 9 mg/kg": {
+                        "days": [
+                                -1,
+                                3,
+                                6
+                        ],
+                        "means": [
+                                52.73,
+                                53.01666667,
+                                52.75
+                        ],
+                        "sems": [
+                                0.86,
+                                0.771758454,
+                                0.64
+                        ]
+                },
+                "Group 6: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                3,
+                                6
+                        ],
+                        "means": [
+                                52.52,
+                                52.93333333,
+                                53.23
+                        ],
+                        "sems": [
+                                0.93,
+                                0.978661217,
+                                0.92
+                        ]
+                },
+                "Group 7: 0.04 mg/kg": {
+                        "days": [
+                                -1,
+                                3,
+                                6
+                        ],
+                        "means": [
+                                53.07,
+                                48.05,
+                                44.88
+                        ],
+                        "sems": [
+                                0.58,
+                                0.508428953,
+                                0.86
+                        ]
+                },
+                "Group 8: 0.04 mg/kg": {
+                        "days": [
+                                -1,
+                                3,
+                                6
+                        ],
+                        "means": [
+                                52.68,
+                                48.03333333,
+                                45.42
+                        ],
+                        "sems": [
+                                0.73,
+                                0.422426851,
+                                0.47
+                        ]
+                },
+                "Group 9: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                3,
+                                6
+                        ],
+                        "means": [
+                                51.93,
+                                51.85,
+                                51.9
+                        ],
+                        "sems": [
+                                1.09,
+                                1.088959748,
+                                1.05
+                        ]
+                }
+        },
+        "Food intake (g/day/mouse)": {
+                "Group 10: 25 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                0.81,
+                                1.53
+                        ],
+                        "sems": [
+                                0.04,
+                                0.06
+                        ]
+                },
+                "Group 11: STD": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                4.4,
+                                3.38
+                        ],
+                        "sems": [
+                                0.08,
+                                0.1
+                        ]
+                },
+                "Group 1: HFD": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                2.5,
+                                2.75
+                        ],
+                        "sems": [
+                                0.13,
+                                0.07
+                        ]
+                },
+                "Group 2: 25 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                2.58,
+                                2.71
+                        ],
+                        "sems": [
+                                0.12,
+                                0.08
+                        ]
+                },
+                "Group 3: 0.12 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                0.72,
+                                1.32
+                        ],
+                        "sems": [
+                                0.03,
+                                0.04
+                        ]
+                },
+                "Group 4: 0.04 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                0.83,
+                                1.63
+                        ],
+                        "sems": [
+                                0.18,
+                                0.21
+                        ]
+                },
+                "Group 6: 25 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                2.9,
+                                2.96
+                        ],
+                        "sems": [
+                                0.06,
+                                0.06
+                        ]
+                },
+                "Group 7: 0.04 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                0.77,
+                                1.14
+                        ],
+                        "sems": [
+                                0.08,
+                                0.04
+                        ]
+                },
+                "Group 8: 0.04 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                0.76,
+                                1.37
+                        ],
+                        "sems": [
+                                0.1,
+                                0.17
+                        ]
+                },
+                "Group 9: 25 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                2.38,
+                                2.48
+                        ],
+                        "sems": [
+                                0.07,
+                                0.13
+                        ]
+                }
+        },
+        "Water intake (mL/day/mouse)": {
+                "Group 10: 25 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                2.57,
+                                3.07
+                        ],
+                        "sems": [
+                                0.29,
+                                0.18
+                        ]
+                },
+                "Group 11: STD": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                7.54,
+                                7.52
+                        ],
+                        "sems": [
+                                1.67,
+                                1.67
+                        ]
+                },
+                "Group 1: HFD": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                5.26,
+                                3.41
+                        ],
+                        "sems": [
+                                0.24,
+                                0.17
+                        ]
+                },
+                "Group 2: 25 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                5.25,
+                                7.33
+                        ],
+                        "sems": [
+                                1.1,
+                                2.21
+                        ]
+                },
+                "Group 3: 0.12 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                2.86,
+                                2.35
+                        ],
+                        "sems": [
+                                0.99,
+                                0.15
+                        ]
+                },
+                "Group 4: 0.04 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                4.15,
+                                2.78
+                        ],
+                        "sems": [
+                                0.72,
+                                0.32
+                        ]
+                },
+                "Group 5: 9 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                3.22,
+                                3.91
+                        ],
+                        "sems": [
+                                0.12,
+                                0.63
+                        ]
+                },
+                "Group 6: 25 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                5.13,
+                                4.54
+                        ],
+                        "sems": [
+                                1.15,
+                                0.53
+                        ]
+                },
+                "Group 7: 0.04 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                3.83,
+                                2.66
+                        ],
+                        "sems": [
+                                0.51,
+                                0.08
+                        ]
+                },
+                "Group 8: 0.04 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                3.69,
+                                3.77
+                        ],
+                        "sems": [
+                                0.67,
+                                0.83
+                        ]
+                },
+                "Group 9: 25 mg/kg": {
+                        "days": [
+                                3,
+                                6
+                        ],
+                        "means": [
+                                4.72,
+                                4.22
+                        ],
+                        "sems": [
+                                1.19,
+                                0.92
+                        ]
+                }
+        },
+        "Fat mass (g)": {
+                "Group 10: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                20.38,
+                                16.01
+                        ],
+                        "sems": [
+                                0.87,
+                                1.24
+                        ]
+                },
+                "Group 11: STD": {
+                        "days": [
+                                -1
+                        ],
+                        "means": [
+                                2.2
+                        ],
+                        "sems": [
+                                1.21
+                        ]
+                },
+                "Group 1: HFD": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                20.63,
+                                21.23
+                        ],
+                        "sems": [
+                                0.41,
+                                0.35
+                        ]
+                },
+                "Group 2: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                20.45,
+                                20.96
+                        ],
+                        "sems": [
+                                0.33,
+                                0.34
+                        ]
+                },
+                "Group 3: 0.12 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                20.3,
+                                15.91
+                        ],
+                        "sems": [
+                                0.93,
+                                0.51
+                        ]
+                },
+                "Group 4: 0.04 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                19.65,
+                                16.13
+                        ],
+                        "sems": [
+                                0.14,
+                                0.78
+                        ]
+                },
+                "Group 5: 9 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                20.48,
+                                20.2
+                        ],
+                        "sems": [
+                                0.46,
+                                0.5
+                        ]
+                },
+                "Group 6: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                19.68,
+                                20.32
+                        ],
+                        "sems": [
+                                0.86,
+                                0.94
+                        ]
+                },
+                "Group 7: 0.04 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                19.74,
+                                14.6
+                        ],
+                        "sems": [
+                                0.64,
+                                1.0
+                        ]
+                },
+                "Group 8: 0.04 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                19.91,
+                                15.53
+                        ],
+                        "sems": [
+                                0.33,
+                                0.56
+                        ]
+                },
+                "Group 9: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                19.87,
+                                19.28
+                        ],
+                        "sems": [
+                                0.6,
+                                0.6
+                        ]
+                }
+        },
+        "Lean mass (g)": {
+                "Group 10: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                30.32,
+                                28.85
+                        ],
+                        "sems": [
+                                0.42,
+                                0.5
+                        ]
+                },
+                "Group 11: STD": {
+                        "days": [
+                                -1
+                        ],
+                        "means": [
+                                32.1
+                        ],
+                        "sems": [
+                                1.0
+                        ]
+                },
+                "Group 1: HFD": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                29.47,
+                                29.38
+                        ],
+                        "sems": [
+                                0.43,
+                                0.37
+                        ]
+                },
+                "Group 2: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                30.17,
+                                29.73
+                        ],
+                        "sems": [
+                                0.64,
+                                0.67
+                        ]
+                },
+                "Group 3: 0.12 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                30.37,
+                                27.53
+                        ],
+                        "sems": [
+                                0.31,
+                                0.31
+                        ]
+                },
+                "Group 4: 0.04 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                30.7,
+                                28.29
+                        ],
+                        "sems": [
+                                0.53,
+                                0.73
+                        ]
+                },
+                "Group 5: 9 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                29.98,
+                                29.97
+                        ],
+                        "sems": [
+                                0.52,
+                                0.47
+                        ]
+                },
+                "Group 6: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                30.44,
+                                30.55
+                        ],
+                        "sems": [
+                                0.47,
+                                0.44
+                        ]
+                },
+                "Group 7: 0.04 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                31.02,
+                                28.75
+                        ],
+                        "sems": [
+                                0.76,
+                                0.59
+                        ]
+                },
+                "Group 8: 0.04 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                30.45,
+                                28.22
+                        ],
+                        "sems": [
+                                0.49,
+                                0.21
+                        ]
+                },
+                "Group 9: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                29.75,
+                                30.39
+                        ],
+                        "sems": [
+                                0.55,
+                                0.43
+                        ]
+                }
+        },
+        "% Body fat": {
+                "Group 10: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                38.23,
+                                34.14
+                        ],
+                        "sems": [
+                                0.81,
+                                1.54
+                        ]
+                },
+                "Group 11: STD": {
+                        "days": [
+                                -1
+                        ],
+                        "means": [
+                                6.13
+                        ],
+                        "sems": [
+                                3.27
+                        ]
+                },
+                "Group 1: HFD": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                39.26,
+                                39.99
+                        ],
+                        "sems": [
+                                0.49,
+                                0.43
+                        ]
+                },
+                "Group 2: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                38.69,
+                                39.42
+                        ],
+                        "sems": [
+                                0.76,
+                                0.81
+                        ]
+                },
+                "Group 3: 0.12 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                38.35,
+                                35.2
+                        ],
+                        "sems": [
+                                1.0,
+                                0.88
+                        ]
+                },
+                "Group 4: 0.04 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                37.09,
+                                34.88
+                        ],
+                        "sems": [
+                                0.45,
+                                0.54
+                        ]
+                },
+                "Group 5: 9 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                38.84,
+                                38.3
+                        ],
+                        "sems": [
+                                0.58,
+                                0.8
+                        ]
+                },
+                "Group 6: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                37.4,
+                                38.09
+                        ],
+                        "sems": [
+                                1.09,
+                                1.22
+                        ]
+                },
+                "Group 7: 0.04 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                37.21,
+                                32.42
+                        ],
+                        "sems": [
+                                1.28,
+                                1.77
+                        ]
+                },
+                "Group 8: 0.04 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                37.8,
+                                34.15
+                        ],
+                        "sems": [
+                                0.47,
+                                0.9
+                        ]
+                },
+                "Group 9: 25 mg/kg": {
+                        "days": [
+                                -1,
+                                6
+                        ],
+                        "means": [
+                                38.23,
+                                37.12
+                        ],
+                        "sems": [
+                                0.56,
+                                0.62
+                        ]
+                }
+        }
+};
+        
+        // Default colors for groups
+        const defaultColors = [
+            '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
+            '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
+            '#bcbd22', '#17becf', '#aec7e8', '#ffbb78'
+        ];
+        
+        // Marker shape options
+        const markerShapes = [
+            'circle', 'square', 'diamond', 'cross', 'x',
+            'triangle-up', 'triangle-down', 'star', 'hexagon'
+        ];
+        
+        // Current state
+        let state = {
+            metric: 'Body weight (g)',
+            groupColors: {},
+            groupNames: {},
+            groupShapes: {},
+            groupLineWidths: {},
+            lineWidth: 2.0,
+            markerSize: 7,
+            xRange: null,
+            yRange: null,
+            visibilityState: {},
+            // Font sizes
+            chartTitleSize: 18,
+            xAxisTitleSize: 14,
+            yAxisTitleSize: 14,
+            xAxisLabelsSize: 12,
+            yAxisLabelsSize: 12
+        };
+        
+        // Get all group keys
+        const groupKeys = Object.keys(allData[state.metric] || {});
+        
+        // Initialize state
+        function initializeState() {
+            groupKeys.forEach((group, index) => {
+                state.groupColors[group] = defaultColors[index % defaultColors.length];
+                state.groupNames[group] = group;
+                state.groupShapes[group] = 'circle';
+                state.groupLineWidths[group] = 2.0;
+                state.visibilityState[group] = true;
+            });
+        }
+        
+        // Create group controls
+        function createGroupControls() {
+            const container = document.getElementById('groupControlsContainer');
+            container.innerHTML = '';
+            
+            groupKeys.forEach((group, index) => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'group-controls';
+                groupDiv.innerHTML = `
+                    <div class="group-header">Group ${index + 1}</div>
+                    <div class="control-row">
+                        <label>Name:</label>
+                        <input type="text" 
+                               value="${state.groupNames[group]}" 
+                               onchange="updateGroupName('${group}', this.value)">
+                    </div>
+                    <div class="control-row">
+                        <label>Color:</label>
+                        <input type="color" 
+                               value="${state.groupColors[group]}" 
+                               onchange="updateGroupColor('${group}', this.value)">
+                        <label style="min-width: 50px;">Shape:</label>
+                        <select onchange="updateGroupShape('${group}', this.value)">
+                            ${markerShapes.map(shape => 
+                                `<option value="${shape}" ${shape === state.groupShapes[group] ? 'selected' : ''}>${shape}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="slider-container">
+                        <label>Line Width:</label>
+                        <input type="range" 
+                               id="lineWidth_${group.replace(/[^a-zA-Z0-9]/g, '_')}"
+                               min="0.5" 
+                               max="8" 
+                               step="0.25" 
+                               value="${state.groupLineWidths[group]}"
+                               onchange="updateGroupLineWidth('${group}', this.value)">
+                        <span class="value-display" 
+                              id="lineWidthValue_${group.replace(/[^a-zA-Z0-9]/g, '_')}">${state.groupLineWidths[group]}px</span>
+                    </div>
+                `;
+                container.appendChild(groupDiv);
+            });
+        }
+        
+        // Update functions
+        function updateGroupName(group, newName) {
+            state.groupNames[group] = newName;
+            updatePlot();
+        }
+        
+        function updateGroupColor(group, newColor) {
+            state.groupColors[group] = newColor;
+            const traceIndex = groupKeys.indexOf(group);
+            Plotly.restyle('plot', {
+                'line.color': [newColor],
+                'marker.color': [newColor]
+            }, [traceIndex]);
+        }
+        
+        function updateGroupShape(group, newShape) {
+            state.groupShapes[group] = newShape;
+            const traceIndex = groupKeys.indexOf(group);
+            Plotly.restyle('plot', {'marker.symbol': [newShape]}, [traceIndex]);
+        }
+        
+        function updateGroupLineWidth(group, newWidth) {
+            const width = parseFloat(newWidth);
+            state.groupLineWidths[group] = width;
+            const safeId = group.replace(/[^a-zA-Z0-9]/g, '_');
+            document.getElementById(`lineWidthValue_${safeId}`).textContent = `${width}px`;
+            
+            const traceIndex = groupKeys.indexOf(group);
+            Plotly.restyle('plot', {'line.width': [width]}, [traceIndex]);
+        }
+        
+        // Font size controls
+        document.getElementById('chartTitleSize').addEventListener('input', function() {
+            const size = parseInt(this.value);
+            state.chartTitleSize = size;
+            document.getElementById('chartTitleSizeValue').textContent = `${size}px`;
+            Plotly.relayout('plot', {
+                'title.font.size': size
+            });
+        });
+        
+        document.getElementById('xAxisTitleSize').addEventListener('input', function() {
+            const size = parseInt(this.value);
+            state.xAxisTitleSize = size;
+            document.getElementById('xAxisTitleSizeValue').textContent = `${size}px`;
+            Plotly.relayout('plot', {
+                'xaxis.title.font.size': size
+            });
+        });
+        
+        document.getElementById('yAxisTitleSize').addEventListener('input', function() {
+            const size = parseInt(this.value);
+            state.yAxisTitleSize = size;
+            document.getElementById('yAxisTitleSizeValue').textContent = `${size}px`;
+            Plotly.relayout('plot', {
+                'yaxis.title.font.size': size
+            });
+        });
+        
+        document.getElementById('xAxisLabelsSize').addEventListener('input', function() {
+            const size = parseInt(this.value);
+            state.xAxisLabelsSize = size;
+            document.getElementById('xAxisLabelsSizeValue').textContent = `${size}px`;
+            Plotly.relayout('plot', {
+                'xaxis.tickfont.size': size
+            });
+        });
+        
+        document.getElementById('yAxisLabelsSize').addEventListener('input', function() {
+            const size = parseInt(this.value);
+            state.yAxisLabelsSize = size;
+            document.getElementById('yAxisLabelsSizeValue').textContent = `${size}px`;
+            Plotly.relayout('plot', {
+                'yaxis.tickfont.size': size
+            });
+        });
+        
+        // Global controls
+        document.getElementById('globalLineWidth').addEventListener('input', function() {
+            const width = parseFloat(this.value);
+            state.lineWidth = width;
+            document.getElementById('globalLineWidthValue').textContent = `${width}px`;
+            
+            // Update all groups
+            groupKeys.forEach(group => {
+                state.groupLineWidths[group] = width;
+                const safeId = group.replace(/[^a-zA-Z0-9]/g, '_');
+                const slider = document.getElementById(`lineWidth_${safeId}`);
+                const display = document.getElementById(`lineWidthValue_${safeId}`);
+                if (slider) slider.value = width;
+                if (display) display.textContent = `${width}px`;
+            });
+            
+            Plotly.restyle('plot', {'line.width': groupKeys.map(() => width)});
+        });
+        
+        document.getElementById('markerSize').addEventListener('input', function() {
+            const size = parseInt(this.value);
+            state.markerSize = size;
+            document.getElementById('markerSizeValue').textContent = `${size}px`;
+            Plotly.restyle('plot', {'marker.size': size});
+        });
+        
+        document.getElementById('metricSelector').addEventListener('change', function() {
+            state.metric = this.value;
+            updatePlot();
+        });
+        
+        // Axis range functions
+        function applyXRange() {
+            const xMin = document.getElementById('xMin').value;
+            const xMax = document.getElementById('xMax').value;
+            
+            if (xMin !== '' && xMax !== '') {
+                state.xRange = [parseFloat(xMin), parseFloat(xMax)];
+                Plotly.relayout('plot', {
+                    'xaxis.range': state.xRange,
+                    'xaxis.autorange': false
+                });
+            }
+        }
+        
+        function resetXRange() {
+            state.xRange = null;
+            document.getElementById('xMin').value = '';
+            document.getElementById('xMax').value = '';
+            Plotly.relayout('plot', {'xaxis.autorange': true});
+        }
+        
+        function applyYRange() {
+            const yMin = document.getElementById('yMin').value;
+            const yMax = document.getElementById('yMax').value;
+            
+            if (yMin !== '' && yMax !== '') {
+                state.yRange = [parseFloat(yMin), parseFloat(yMax)];
+                Plotly.relayout('plot', {
+                    'yaxis.range': state.yRange,
+                    'yaxis.autorange': false
+                });
+            }
+        }
+        
+        function resetYRange() {
+            state.yRange = null;
+            document.getElementById('yMin').value = '';
+            document.getElementById('yMax').value = '';
+            Plotly.relayout('plot', {'yaxis.autorange': true});
+        }
+        
+        // Create plot
+        function createPlot() {
+            const metricData = allData[state.metric];
+            if (!metricData) {
+                document.getElementById('plot').innerHTML = '<div class="error-message">No data available for this metric</div>';
+                return;
+            }
+            
+            const traces = groupKeys.map(group => {
+                const data = metricData[group];
+                if (!data) return null;
+                
+                return {
+                    x: data.days,
+                    y: data.means,
+                    error_y: {
+                        type: 'data',
+                        array: data.sems,
+                        visible: true,
+                        color: state.groupColors[group]
+                    },
+                    mode: 'lines+markers',
+                    name: state.groupNames[group],
+                    line: {
+                        color: state.groupColors[group],
+                        width: state.groupLineWidths[group]
+                    },
+                    marker: {
+                        size: state.markerSize,
+                        color: state.groupColors[group],
+                        symbol: state.groupShapes[group]
+                    },
+                    visible: state.visibilityState[group]
+                };
+            }).filter(trace => trace !== null);
+            
+            const layout = {
+                title: {
+                    text: state.metric,
+                    font: {
+                        size: state.chartTitleSize,
+                        color: '#2c3e50'
+                    }
+                },
+                xaxis: {
+                    title: {
+                        text: 'Day',
+                        font: {
+                            size: state.xAxisTitleSize
+                        }
+                    },
+                    tickfont: {
+                        size: state.xAxisLabelsSize
+                    },
+                    gridcolor: '#e0e0e0',
+                    showgrid: true,
+                    autorange: state.xRange === null,
+                    range: state.xRange
+                },
+                yaxis: {
+                    title: {
+                        text: state.metric,
+                        font: {
+                            size: state.yAxisTitleSize
+                        }
+                    },
+                    tickfont: {
+                        size: state.yAxisLabelsSize
+                    },
+                    gridcolor: '#e0e0e0',
+                    showgrid: true,
+                    autorange: state.yRange === null,
+                    range: state.yRange
+                },
+                plot_bgcolor: 'white',
+                paper_bgcolor: 'white',
+                legend: {
+                    x: 1.02,
+                    y: 1,
+                    xanchor: 'left',
+                    yanchor: 'top',
+                    bgcolor: 'rgba(255,255,255,0.9)',
+                    bordercolor: '#e0e0e0',
+                    borderwidth: 1
+                },
+                hovermode: 'closest',
+                margin: {l: 80, r: 200, t: 60, b: 60}
+            };
+            
+            const config = {
+                responsive: true,
+                displayModeBar: true,
+                displaylogo: false,
+                toImageButtonOptions: {
+                    format: 'png',
+                    filename: `INHBE_DIO_${state.metric.replace(/[^a-zA-Z0-9]/g, '_')}`,
+                    height: 800,
+                    width: 1200,
+                    scale: 2
+                }
+            };
+            
+            Plotly.newPlot('plot', traces, layout, config);
+            
+            // Track visibility changes
+            document.getElementById('plot').on('plotly_legendclick', function(data) {
+                const group = groupKeys[data.curveNumber];
+                state.visibilityState[group] = !state.visibilityState[group];
+                return true;
+            });
+        }
+        
+        function updatePlot() {
+            createPlot();
+        }
+        
+        // Initialize on page load
+        if (typeof Plotly === 'undefined') {
+            document.getElementById('plot').innerHTML = '<div class="error-message">Error: Plotly library failed to load. Please check your internet connection.</div>';
+        } else {
+            initializeState();
+            createGroupControls();
+            createPlot();
+        }
+    </script>
+</body>
+</html>
