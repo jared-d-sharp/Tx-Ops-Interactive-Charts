@@ -16,22 +16,14 @@ This guide explains how to add new interactive Plotly dashboards to your existin
    - The forward slash `/` automatically creates a folder
 
 ### Step 3: Add Your Dashboard HTML Content
-1. Open your Plotly dashboard HTML file on your computer using a text editor:
-   - **Windows:** Right-click the file → **Open with** → **Notepad**
-   - **Mac:** Right-click the file → **Open With** → **TextEdit**
-2. Select all content: **Ctrl+A** (Windows) or **Cmd+A** (Mac)
-3. Copy the content: **Ctrl+C** (Windows) or **Cmd+C** (Mac)
-4. Go back to your browser (GitHub page)
-5. Click inside the large white text area on GitHub
-6. Paste the HTML content: **Ctrl+V** (Windows) or **Cmd+V** (Mac)
+1. Drag and drop the Plotly dashboard HTML file on your computer into the the large white text area on the GitHub browser page
 
 ### Step 4: Commit the New Dashboard File
-1. Scroll to the **bottom of the page**
-2. Click the **"Commit changes..."** button
-3. A popup window will appear
-4. In the **"Commit message"** text box, type: `Add [dashboard name] dashboard`
-5. Make sure **"Commit directly to the main branch"** is selected
-6. Click the green **"Commit changes"** button
+1. Click the **"Commit changes..."** button
+2. A popup window will appear
+3. In the **"Commit message"** text box, type: `Add [dashboard name] dashboard`
+4. Make sure **"Commit directly to the main branch"** is selected
+5. Click the green **"Commit changes"** button
 
 ### Step 5: Update the Landing Page
 1. Click on your **repository name** at the top-left to go back to the main page
@@ -61,11 +53,10 @@ text
 ```
 
 ### Step 6: Commit the Landing Page Update
-1. Scroll to the bottom of the page
-2. Click "Commit changes..."
-3. In the popup, type: Add link to new dashboard
-4. Make sure "Commit directly to the main branch" is selected
-5. Click the green "Commit changes" button
+1. Click "Commit changes..."
+2. In the popup, type: Add link to new dashboard
+3. Make sure "Commit directly to the main branch" is selected
+4. Click the green "Commit changes" button
 
 ### Step 7: Access Your New Dashboard
 1. Wait 2-3 minutes for GitHub Pages to rebuild your site
