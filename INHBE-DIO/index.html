@@ -1,0 +1,2522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INHBE-DIO Metabolic Study Interactive Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            max-width: 1800px;
+            margin: 0 auto;
+            min-height: 800px;
+        }
+        
+        .controls {
+            width: 400px;
+            padding: 20px;
+            background: #f8f9fa;
+            overflow-y: auto;
+            max-height: 90vh;
+            border-right: 1px solid #dee2e6;
+        }
+        
+        .controls h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        
+        .control-group select,
+        .control-group input[type="text"],
+        .control-group input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .sample-controls {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .sample-controls h3 {
+            font-size: 0.95em;
+            color: #667eea;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sample-controls .color-preview {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        
+        .control-row {
+            margin-bottom: 8px;
+        }
+        
+        .control-row label {
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .slider-container input[type="range"] {
+            flex: 1;
+        }
+        
+        .slider-value {
+            min-width: 45px;
+            text-align: right;
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #dee2e6;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #764ba2;
+            transform: scale(1.1);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s ease;
+        }
+        
+        input[type="range"]::-moz-range-thumb:hover {
+            background: #764ba2;
+            transform: scale(1.1);
+        }
+        
+        .axis-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .axis-controls input {
+            padding: 6px;
+        }
+        
+        .button {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-top: 5px;
+        }
+        
+        .button:hover {
+            background: #764ba2;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .button.secondary {
+            background: #6c757d;
+        }
+        
+        .button.secondary:hover {
+            background: #5a6268;
+        }
+        
+        .chart-container {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #plot {
+            flex: 1;
+            min-height: 600px;
+        }
+        
+        .info-text {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        input[type="color"] {
+            width: 100%;
+            height: 35px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        /* Scrollbar styling */
+        .controls::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .controls::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .controls::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+        
+        .controls::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>INHBE-DIO Metabolic Study</h1>
+        <p>Interactive Dashboard - Generated 2025-10-23 18:20</p>
+    </div>
+    
+    <div class="container">
+        <div class="controls">
+            <h2>📊 Metric Selection</h2>
+            <div class="control-group">
+                <label for="metricSelect">Select Metric:</label>
+                <select id="metricSelect">
+                    <!-- Will be populated dynamically -->
+                </select>
+            </div>
+            
+            <h2>🎨 Sample Controls</h2>
+            <div id="sampleControls">
+                <!-- Will be populated dynamically -->
+            </div>
+            
+            <h2>⚙️ Global Appearance</h2>
+            <div class="control-group">
+                <label>Global Line Width:</label>
+                <div class="slider-container">
+                    <input type="range" id="globalLineWidth" min="0.5" max="8" step="0.25" value="2">
+                    <span class="slider-value" id="globalLineWidthValue">2.0px</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>Marker Size:</label>
+                <div class="slider-container">
+                    <input type="range" id="markerSize" min="3" max="15" step="1" value="7">
+                    <span class="slider-value" id="markerSizeValue">7px</span>
+                </div>
+            </div>
+            
+            <h2>📏 Axis Ranges</h2>
+            <div class="control-group">
+                <label>X-Axis (Day):</label>
+                <div class="axis-controls">
+                    <input type="number" id="xMin" placeholder="Min">
+                    <input type="number" id="xMax" placeholder="Max">
+                </div>
+                <button class="button" onclick="applyAxisRanges()">Apply Range</button>
+                <button class="button secondary" onclick="resetAxisRanges()">Reset</button>
+            </div>
+            
+            <div class="control-group">
+                <label>Y-Axis:</label>
+                <div class="axis-controls">
+                    <input type="number" id="yMin" placeholder="Min">
+                    <input type="number" id="yMax" placeholder="Max">
+                </div>
+                <button class="button" onclick="applyAxisRanges()">Apply Range</button>
+                <button class="button secondary" onclick="resetAxisRanges()">Reset</button>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <div id="plot"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Embedded data
+        const allData = {
+  "Body weight (g)": {
+    "Group 10: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        53.22,
+        48.48333333,
+        46.55
+      ],
+      "sems": [
+        1.4,
+        1.345465636,
+        1.72
+      ]
+    },
+    "Group 11: STD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        35.44,
+        36.18,
+        35.44
+      ],
+      "sems": [
+        0.64,
+        0.780640762,
+        0.780640762,
+        0.82,
+        0.82
+      ]
+    },
+    "Group 1: HFD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        52.55,
+        52.7875,
+        53.09
+      ],
+      "sems": [
+        0.8,
+        0.638479639,
+        0.67
+      ]
+    },
+    "Group 2: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        52.88,
+        53.13333333,
+        53.22
+      ],
+      "sems": [
+        0.66,
+        0.797356744,
+        0.65
+      ]
+    },
+    "Group 3: 0.12 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        52.82,
+        47.91666667,
+        45.15
+      ],
+      "sems": [
+        1.17,
+        1.187831825,
+        0.42
+      ]
+    },
+    "Group 4: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        53.0,
+        48.03333333,
+        46.13
+      ],
+      "sems": [
+        0.59,
+        1.090157991,
+        1.68
+      ]
+    },
+    "Group 5: 9 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        52.73,
+        53.01666667,
+        52.75
+      ],
+      "sems": [
+        0.86,
+        0.771758454,
+        0.64
+      ]
+    },
+    "Group 6: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        52.52,
+        52.93333333,
+        53.23
+      ],
+      "sems": [
+        0.93,
+        0.978661217,
+        0.92
+      ]
+    },
+    "Group 7: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        53.07,
+        48.05,
+        44.88
+      ],
+      "sems": [
+        0.58,
+        0.508428953,
+        0.86
+      ]
+    },
+    "Group 8: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        52.68,
+        48.03333333,
+        45.42
+      ],
+      "sems": [
+        0.73,
+        0.422426851,
+        0.47
+      ]
+    },
+    "Group 9: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        51.93,
+        51.85,
+        51.9
+      ],
+      "sems": [
+        1.09,
+        1.088959748,
+        1.05
+      ]
+    }
+  },
+  "Body weight change (%)": {
+    "Group 10: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        -8.900162852311158,
+        -12.532882375046977
+      ],
+      "sems": [
+        2.6305900037579857,
+        2.528120323186772,
+        3.231867718902668
+      ]
+    },
+    "Group 11: STD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        2.0880361173814954,
+        0.0
+      ],
+      "sems": [
+        1.8058690744920995,
+        2.202710953724605,
+        2.202710953724605,
+        2.3137697516930023,
+        2.3137697516930023
+      ]
+    },
+    "Group 1: HFD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.45195052331114033,
+        1.0275927687916389
+      ],
+      "sems": [
+        1.5223596574690772,
+        1.2149945556612751,
+        1.2749762131303521
+      ]
+    },
+    "Group 2: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.4790721066565746,
+        0.642965204235999
+      ],
+      "sems": [
+        1.248108925869894,
+        1.5078607110438729,
+        1.2291981845688351
+      ]
+    },
+    "Group 3: 0.12 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        -9.28309982961,
+        -14.521014767133664
+      ],
+      "sems": [
+        2.2150700492237787,
+        2.24882965732677,
+        0.7951533510034078
+      ]
+    },
+    "Group 4: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        -9.37106918867925,
+        -12.962264150943392
+      ],
+      "sems": [
+        1.1132075471698113,
+        2.056901869811321,
+        3.1698113207547167
+      ]
+    },
+    "Group 5: 9 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.5436500474113455,
+        0.03792907263418002
+      ],
+      "sems": [
+        1.630950123269486,
+        1.4636041228901953,
+        1.213730324293571
+      ]
+    },
+    "Group 6: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.7870017707539991,
+        1.35186595582634
+      ],
+      "sems": [
+        1.7707539984767706,
+        1.8634067345773035,
+        1.7517136329017517
+      ]
+    },
+    "Group 7: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        -9.459204823817604,
+        -15.43244771057094
+      ],
+      "sems": [
+        1.092896174863388,
+        0.9580345826267194,
+        1.620501224797437
+      ]
+    },
+    "Group 8: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        -8.820551765375857,
+        -13.781321184510247
+      ],
+      "sems": [
+        1.3857251328777525,
+        0.8018732934700077,
+        0.8921791951404707
+      ]
+    },
+    "Group 9: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        -0.15405353360292373,
+        -0.05777007510109982
+      ],
+      "sems": [
+        2.0989793953398808,
+        2.0969762141344117,
+        2.021952628538417
+      ]
+    }
+  },
+  "Food intake/day/mouse (g)": {
+    "Group 10: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.81,
+        1.53
+      ],
+      "sems": [
+        0.0,
+        0.04,
+        0.06
+      ]
+    },
+    "Group 11: STD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        4.4,
+        3.38
+      ],
+      "sems": [
+        0.0,
+        0.08,
+        0.1,
+        0.12,
+        0.67
+      ]
+    },
+    "Group 1: HFD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        2.5,
+        2.75
+      ],
+      "sems": [
+        0.0,
+        0.13,
+        0.07
+      ]
+    },
+    "Group 2: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        2.58,
+        2.71
+      ],
+      "sems": [
+        0.0,
+        0.12,
+        0.08
+      ]
+    },
+    "Group 3: 0.12 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.72,
+        1.32
+      ],
+      "sems": [
+        0.0,
+        0.03,
+        0.04
+      ]
+    },
+    "Group 4: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.83,
+        1.63
+      ],
+      "sems": [
+        0.0,
+        0.18,
+        0.21
+      ]
+    },
+    "Group 5: 9 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        2.62,
+        2.41
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "Group 6: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        2.9,
+        2.96
+      ],
+      "sems": [
+        0.0,
+        0.06,
+        0.06
+      ]
+    },
+    "Group 7: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.77,
+        1.14
+      ],
+      "sems": [
+        0.0,
+        0.08,
+        0.04
+      ]
+    },
+    "Group 8: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.76,
+        1.37
+      ],
+      "sems": [
+        0.0,
+        0.1,
+        0.17
+      ]
+    },
+    "Group 9: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        2.38,
+        2.48
+      ],
+      "sems": [
+        0.0,
+        0.07,
+        0.13
+      ]
+    }
+  },
+  "Water intake/day/mouse (mL)": {
+    "Group 10: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        2.57,
+        3.07
+      ],
+      "sems": [
+        0.0,
+        0.29,
+        0.18
+      ]
+    },
+    "Group 11: STD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        7.54,
+        7.52
+      ],
+      "sems": [
+        0.0,
+        1.67,
+        1.67,
+        1.6,
+        1.6
+      ]
+    },
+    "Group 1: HFD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        5.26,
+        3.41
+      ],
+      "sems": [
+        0.0,
+        0.24,
+        0.17
+      ]
+    },
+    "Group 2: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        5.25,
+        7.33
+      ],
+      "sems": [
+        0.0,
+        1.1,
+        2.21
+      ]
+    },
+    "Group 3: 0.12 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        2.86,
+        2.35
+      ],
+      "sems": [
+        0.0,
+        0.99,
+        0.15
+      ]
+    },
+    "Group 4: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        4.15,
+        2.78
+      ],
+      "sems": [
+        0.0,
+        0.72,
+        0.32
+      ]
+    },
+    "Group 5: 9 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        3.22,
+        3.91
+      ],
+      "sems": [
+        0.0,
+        0.12,
+        0.63
+      ]
+    },
+    "Group 6: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        5.13,
+        4.54
+      ],
+      "sems": [
+        0.0,
+        1.15,
+        0.53
+      ]
+    },
+    "Group 7: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        3.83,
+        2.66
+      ],
+      "sems": [
+        0.0,
+        0.51,
+        0.08
+      ]
+    },
+    "Group 8: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        3.69,
+        3.77
+      ],
+      "sems": [
+        0.0,
+        0.67,
+        0.83
+      ]
+    },
+    "Group 9: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        4.72,
+        4.22
+      ],
+      "sems": [
+        0.0,
+        1.19,
+        0.92
+      ]
+    }
+  },
+  "Fat mass (g)": {
+    "Group 10: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        20.38,
+        0.0,
+        16.01
+      ],
+      "sems": [
+        0.87,
+        0.0,
+        1.24
+      ]
+    },
+    "Group 11: STD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        2.2,
+        0.0,
+        2.34
+      ],
+      "sems": [
+        1.21,
+        0.0,
+        0.0,
+        1.42,
+        1.42
+      ]
+    },
+    "Group 1: HFD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        20.63,
+        0.0,
+        21.23
+      ],
+      "sems": [
+        0.41,
+        0.0,
+        0.35
+      ]
+    },
+    "Group 2: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        20.45,
+        0.0,
+        20.96
+      ],
+      "sems": [
+        0.33,
+        0.0,
+        0.34
+      ]
+    },
+    "Group 3: 0.12 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        20.3,
+        0.0,
+        15.91
+      ],
+      "sems": [
+        0.93,
+        0.0,
+        0.51
+      ]
+    },
+    "Group 4: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        19.65,
+        0.0,
+        16.13
+      ],
+      "sems": [
+        0.14,
+        0.0,
+        0.78
+      ]
+    },
+    "Group 5: 9 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        20.48,
+        0.0,
+        20.2
+      ],
+      "sems": [
+        0.46,
+        0.0,
+        0.5
+      ]
+    },
+    "Group 6: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        19.68,
+        0.0,
+        20.32
+      ],
+      "sems": [
+        0.86,
+        0.0,
+        0.94
+      ]
+    },
+    "Group 7: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        19.74,
+        0.0,
+        14.6
+      ],
+      "sems": [
+        0.64,
+        0.0,
+        1.0
+      ]
+    },
+    "Group 8: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        19.91,
+        0.0,
+        15.53
+      ],
+      "sems": [
+        0.33,
+        0.0,
+        0.56
+      ]
+    },
+    "Group 9: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        19.87,
+        0.0,
+        19.28
+      ],
+      "sems": [
+        0.6,
+        0.0,
+        0.6
+      ]
+    }
+  },
+  "Lean mass (g)": {
+    "Group 10: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        30.32,
+        0.0,
+        28.85
+      ],
+      "sems": [
+        0.42,
+        0.0,
+        0.5
+      ]
+    },
+    "Group 11: STD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        32.1,
+        0.0,
+        32.19
+      ],
+      "sems": [
+        1.0,
+        0.0,
+        0.0,
+        0.93,
+        0.93
+      ]
+    },
+    "Group 1: HFD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        29.47,
+        0.0,
+        29.38
+      ],
+      "sems": [
+        0.43,
+        0.0,
+        0.37
+      ]
+    },
+    "Group 2: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        30.17,
+        0.0,
+        29.73
+      ],
+      "sems": [
+        0.64,
+        0.0,
+        0.67
+      ]
+    },
+    "Group 3: 0.12 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        30.37,
+        0.0,
+        27.53
+      ],
+      "sems": [
+        0.31,
+        0.0,
+        0.31
+      ]
+    },
+    "Group 4: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        30.7,
+        0.0,
+        28.29
+      ],
+      "sems": [
+        0.53,
+        0.0,
+        0.73
+      ]
+    },
+    "Group 5: 9 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        29.98,
+        0.0,
+        29.97
+      ],
+      "sems": [
+        0.52,
+        0.0,
+        0.47
+      ]
+    },
+    "Group 6: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        30.44,
+        0.0,
+        30.55
+      ],
+      "sems": [
+        0.47,
+        0.0,
+        0.44
+      ]
+    },
+    "Group 7: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        31.02,
+        0.0,
+        28.75
+      ],
+      "sems": [
+        0.76,
+        0.0,
+        0.59
+      ]
+    },
+    "Group 8: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        30.45,
+        0.0,
+        28.22
+      ],
+      "sems": [
+        0.49,
+        0.0,
+        0.21
+      ]
+    },
+    "Group 9: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        29.75,
+        0.0,
+        30.39
+      ],
+      "sems": [
+        0.55,
+        0.0,
+        0.43
+      ]
+    }
+  },
+  "Fat mass/BW (%)": {
+    "Group 10: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        38.23,
+        0.0,
+        34.14
+      ],
+      "sems": [
+        0.81,
+        0.0,
+        1.54
+      ]
+    },
+    "Group 11: STD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        6.13,
+        0.0,
+        6.33
+      ],
+      "sems": [
+        3.27,
+        0.0,
+        0.0,
+        3.67,
+        3.67
+      ]
+    },
+    "Group 1: HFD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        39.26,
+        0.0,
+        39.99
+      ],
+      "sems": [
+        0.49,
+        0.0,
+        0.43
+      ]
+    },
+    "Group 2: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        38.69,
+        0.0,
+        39.42
+      ],
+      "sems": [
+        0.76,
+        0.0,
+        0.81
+      ]
+    },
+    "Group 3: 0.12 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        38.35,
+        0.0,
+        35.2
+      ],
+      "sems": [
+        1.0,
+        0.0,
+        0.88
+      ]
+    },
+    "Group 4: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        37.09,
+        0.0,
+        34.88
+      ],
+      "sems": [
+        0.45,
+        0.0,
+        0.54
+      ]
+    },
+    "Group 5: 9 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        38.84,
+        0.0,
+        38.3
+      ],
+      "sems": [
+        0.58,
+        0.0,
+        0.8
+      ]
+    },
+    "Group 6: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        37.4,
+        0.0,
+        38.09
+      ],
+      "sems": [
+        1.09,
+        0.0,
+        1.22
+      ]
+    },
+    "Group 7: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        37.21,
+        0.0,
+        32.42
+      ],
+      "sems": [
+        1.28,
+        0.0,
+        1.77
+      ]
+    },
+    "Group 8: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        37.8,
+        0.0,
+        34.15
+      ],
+      "sems": [
+        0.47,
+        0.0,
+        0.9
+      ]
+    },
+    "Group 9: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        38.23,
+        0.0,
+        37.12
+      ],
+      "sems": [
+        0.56,
+        0.0,
+        0.62
+      ]
+    }
+  },
+  "Lean mass/BW (%)": {
+    "Group 10: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        57.09,
+        0.0,
+        62.27
+      ],
+      "sems": [
+        1.08,
+        0.0,
+        1.8
+      ]
+    },
+    "Group 11: STD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        90.69,
+        0.0,
+        91.09
+      ],
+      "sems": [
+        3.09,
+        0.0,
+        0.0,
+        3.68,
+        3.68
+      ]
+    },
+    "Group 1: HFD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        56.08,
+        0.0,
+        55.35
+      ],
+      "sems": [
+        0.42,
+        0.0,
+        0.46
+      ]
+    },
+    "Group 2: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        57.03,
+        0.0,
+        55.84
+      ],
+      "sems": [
+        0.76,
+        0.0,
+        0.69
+      ]
+    },
+    "Group 3: 0.12 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        57.62,
+        0.0,
+        61.01
+      ],
+      "sems": [
+        1.13,
+        0.0,
+        0.96
+      ]
+    },
+    "Group 4: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        57.9,
+        0.0,
+        61.45
+      ],
+      "sems": [
+        0.47,
+        0.0,
+        0.83
+      ]
+    },
+    "Group 5: 9 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        56.86,
+        0.0,
+        56.81
+      ],
+      "sems": [
+        0.72,
+        0.0,
+        0.51
+      ]
+    },
+    "Group 6: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        58.05,
+        0.0,
+        57.49
+      ],
+      "sems": [
+        1.33,
+        0.0,
+        1.32
+      ]
+    },
+    "Group 7: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        58.43,
+        0.0,
+        64.17
+      ],
+      "sems": [
+        1.11,
+        0.0,
+        1.7
+      ]
+    },
+    "Group 8: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        57.81,
+        0.0,
+        62.17
+      ],
+      "sems": [
+        0.56,
+        0.0,
+        0.95
+      ]
+    },
+    "Group 9: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        57.32,
+        0.0,
+        58.61
+      ],
+      "sems": [
+        0.65,
+        0.0,
+        0.74
+      ]
+    }
+  },
+  "Fat mass change (%)": {
+    "Group 10: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        -22.03
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        3.06
+      ]
+    },
+    "Group 11: STD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        0.45
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        0.0,
+        11.29,
+        11.29
+      ]
+    },
+    "Group 1: HFD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        2.96
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        1.17
+      ]
+    },
+    "Group 2: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        2.53
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        0.56
+      ]
+    },
+    "Group 3: 0.12 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        -21.35
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        1.66
+      ]
+    },
+    "Group 4: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        -17.92
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        3.9
+      ]
+    },
+    "Group 5: 9 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        -1.35
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        1.02
+      ]
+    },
+    "Group 6: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        3.23
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        1.01
+      ]
+    },
+    "Group 7: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        -26.36
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        3.13
+      ]
+    },
+    "Group 8: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        -21.96
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        2.7
+      ]
+    },
+    "Group 9: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        -2.97
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        0.53
+      ]
+    }
+  },
+  "Lean mass change (%)": {
+    "Group 10: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        -4.87
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        0.45
+      ]
+    },
+    "Group 11: STD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        0.3
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        0.0,
+        0.31,
+        0.31
+      ]
+    },
+    "Group 1: HFD": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        -0.26
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        0.72
+      ]
+    },
+    "Group 2: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        -1.46
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        0.33
+      ]
+    },
+    "Group 3: 0.12 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        -9.31
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        1.24
+      ]
+    },
+    "Group 4: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        -7.91
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        0.9
+      ]
+    },
+    "Group 5: 9 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        0.63
+      ]
+    },
+    "Group 6: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        0.38
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        0.29
+      ]
+    },
+    "Group 7: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        -7.22
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        1.12
+      ]
+    },
+    "Group 8: 0.04 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        -7.27
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        1.04
+      ]
+    },
+    "Group 9: 25 mg/kg": {
+      "days": [
+        -1,
+        3,
+        6
+      ],
+      "means": [
+        0.0,
+        0.0,
+        2.18
+      ],
+      "sems": [
+        0.0,
+        0.0,
+        0.51
+      ]
+    }
+  }
+};
+        
+        // Initial groups (will be populated from data)
+        const groups = ["Group 10: 25 mg/kg", "Group 11: STD", "Group 1: HFD", "Group 2: 25 mg/kg", "Group 3: 0.12 mg/kg", "Group 4: 0.04 mg/kg", "Group 5: 9 mg/kg", "Group 6: 25 mg/kg", "Group 7: 0.04 mg/kg", "Group 8: 0.04 mg/kg", "Group 9: 25 mg/kg"];
+        
+        // State management
+        const state = {
+            metric: null,  // Will be set to first metric
+            groupColors: {"Group 10: 25 mg/kg": "#1f77b4", "Group 11: STD": "#ff7f0e", "Group 1: HFD": "#2ca02c", "Group 2: 25 mg/kg": "#d62728", "Group 3: 0.12 mg/kg": "#9467bd", "Group 4: 0.04 mg/kg": "#8c564b", "Group 5: 9 mg/kg": "#e377c2", "Group 6: 25 mg/kg": "#7f7f7f", "Group 7: 0.04 mg/kg": "#bcbd22", "Group 8: 0.04 mg/kg": "#17becf", "Group 9: 25 mg/kg": "#aec7e8"},
+            groupNames: {"Group 10: 25 mg/kg": "Group 10: 25 mg/kg", "Group 11: STD": "Group 11: STD", "Group 1: HFD": "Group 1: HFD", "Group 2: 25 mg/kg": "Group 2: 25 mg/kg", "Group 3: 0.12 mg/kg": "Group 3: 0.12 mg/kg", "Group 4: 0.04 mg/kg": "Group 4: 0.04 mg/kg", "Group 5: 9 mg/kg": "Group 5: 9 mg/kg", "Group 6: 25 mg/kg": "Group 6: 25 mg/kg", "Group 7: 0.04 mg/kg": "Group 7: 0.04 mg/kg", "Group 8: 0.04 mg/kg": "Group 8: 0.04 mg/kg", "Group 9: 25 mg/kg": "Group 9: 25 mg/kg"},
+            groupShapes: {"Group 10: 25 mg/kg": "circle", "Group 11: STD": "square", "Group 1: HFD": "diamond", "Group 2: 25 mg/kg": "cross", "Group 3: 0.12 mg/kg": "x", "Group 4: 0.04 mg/kg": "triangle-up", "Group 5: 9 mg/kg": "triangle-down", "Group 6: 25 mg/kg": "star", "Group 7: 0.04 mg/kg": "hexagon", "Group 8: 0.04 mg/kg": "pentagon", "Group 9: 25 mg/kg": "circle"},
+            groupLineWidths: {"Group 10: 25 mg/kg": 2.0, "Group 11: STD": 2.0, "Group 1: HFD": 2.0, "Group 2: 25 mg/kg": 2.0, "Group 3: 0.12 mg/kg": 2.0, "Group 4: 0.04 mg/kg": 2.0, "Group 5: 9 mg/kg": 2.0, "Group 6: 25 mg/kg": 2.0, "Group 7: 0.04 mg/kg": 2.0, "Group 8: 0.04 mg/kg": 2.0, "Group 9: 25 mg/kg": 2.0},
+            lineWidth: 2.0,
+            markerSize: 7,
+            xRange: null,
+            yRange: null,
+            visibilityState: {"Group 10: 25 mg/kg": true, "Group 11: STD": true, "Group 1: HFD": true, "Group 2: 25 mg/kg": true, "Group 3: 0.12 mg/kg": true, "Group 4: 0.04 mg/kg": true, "Group 5: 9 mg/kg": true, "Group 6: 25 mg/kg": true, "Group 7: 0.04 mg/kg": true, "Group 8: 0.04 mg/kg": true, "Group 9: 25 mg/kg": true}
+        };
+        
+        // Initialize metric to first available
+        state.metric = Object.keys(allData)[0];
+        
+        // Marker shape options
+        const markerShapes = [
+            'circle', 'square', 'diamond', 'cross', 'x',
+            'triangle-up', 'triangle-down', 'star', 'hexagon', 'pentagon'
+        ];
+        
+        // Initialize the dashboard
+        function init() {
+            // Populate metric selector
+            const metricSelect = document.getElementById('metricSelect');
+            Object.keys(allData).forEach(metric => {
+                const option = document.createElement('option');
+                option.value = metric;
+                option.textContent = metric;
+                metricSelect.appendChild(option);
+            });
+            metricSelect.value = state.metric;
+            
+            // Create sample controls
+            createSampleControls();
+            
+            // Add event listeners
+            metricSelect.addEventListener('change', (e) => {
+                state.metric = e.target.value;
+                updatePlot();
+            });
+            
+            document.getElementById('globalLineWidth').addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                state.lineWidth = value;
+                document.getElementById('globalLineWidthValue').textContent = value.toFixed(1) + 'px';
+                
+                // Update all individual line widths
+                groups.forEach((group, idx) => {
+                    state.groupLineWidths[group] = value;
+                    document.getElementById(`lineWidth_${idx}`).value = value;
+                    document.getElementById(`lineWidthValue_${idx}`).textContent = value.toFixed(1) + 'px';
+                });
+                
+                updatePlot();
+            });
+            
+            document.getElementById('markerSize').addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                state.markerSize = value;
+                document.getElementById('markerSizeValue').textContent = value + 'px';
+                updatePlot();
+            });
+            
+            // Initial plot
+            updatePlot();
+        }
+        
+        function createSampleControls() {
+            const container = document.getElementById('sampleControls');
+            container.innerHTML = '';
+            
+            groups.forEach((group, idx) => {
+                const div = document.createElement('div');
+                div.className = 'sample-controls';
+                div.innerHTML = `
+                    <h3>
+                        <div class="color-preview" style="background-color: ${state.groupColors[group]}"></div>
+                        <span>${group}</span>
+                    </h3>
+                    <div class="control-row">
+                        <label>Custom Name:</label>
+                        <input type="text" value="${group}" onchange="updateGroupName('${group}', this.value)">
+                    </div>
+                    <div class="control-row">
+                        <label>Color:</label>
+                        <input type="color" value="${state.groupColors[group]}" onchange="updateGroupColor('${group}', this.value)">
+                    </div>
+                    <div class="control-row">
+                        <label>Marker Shape:</label>
+                        <select onchange="updateGroupShape('${group}', this.value)">
+                            ${markerShapes.map(shape => 
+                                `<option value="${shape}" ${state.groupShapes[group] === shape ? 'selected' : ''}>${shape}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="control-row">
+                        <label>Line Width:</label>
+                        <div class="slider-container">
+                            <input type="range" id="lineWidth_${idx}" min="0.5" max="8" step="0.25" 
+                                   value="${state.groupLineWidths[group]}"
+                                   oninput="updateGroupLineWidth('${group}', this.value, ${idx})">
+                            <span class="slider-value" id="lineWidthValue_${idx}">${state.groupLineWidths[group].toFixed(1)}px</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function updateGroupName(group, newName) {
+            state.groupNames[group] = newName;
+            updatePlot();
+        }
+        
+        function updateGroupColor(group, newColor) {
+            state.groupColors[group] = newColor;
+            updatePlot();
+        }
+        
+        function updateGroupShape(group, newShape) {
+            state.groupShapes[group] = newShape;
+            updatePlot();
+        }
+        
+        function updateGroupLineWidth(group, value, idx) {
+            const numValue = parseFloat(value);
+            state.groupLineWidths[group] = numValue;
+            document.getElementById(`lineWidthValue_${idx}`).textContent = numValue.toFixed(1) + 'px';
+            updatePlot();
+        }
+        
+        function updatePlot() {
+            const metric = state.metric;
+            const metricData = allData[metric];
+            
+            if (!metricData) {
+                console.error('No data for metric:', metric);
+                return;
+            }
+            
+            // Create traces
+            const traces = [];
+            groups.forEach(group => {
+                if (!metricData[group]) return;
+                
+                const groupData = metricData[group];
+                const trace = {
+                    x: groupData.days,
+                    y: groupData.means,
+                    error_y: {
+                        type: 'data',
+                        array: groupData.sems,
+                        visible: true
+                    },
+                    mode: 'lines+markers',
+                    name: state.groupNames[group],
+                    line: {
+                        color: state.groupColors[group],
+                        width: state.groupLineWidths[group]
+                    },
+                    marker: {
+                        color: state.groupColors[group],
+                        size: state.markerSize,
+                        symbol: state.groupShapes[group]
+                    },
+                    visible: state.visibilityState[group] ? true : 'legendonly',
+                    hovertemplate: '<b>%{fullData.name}</b><br>' +
+                                   'Day: %{x}<br>' +
+                                   'Mean: %{y:.2f}<br>' +
+                                   'SEM: %{error_y.array:.2f}<br>' +
+                                   '<extra></extra>'
+                };
+                traces.push(trace);
+            });
+            
+            // Layout configuration
+            const layout = {
+                title: {
+                    text: metric,
+                    font: {
+                        size: 20,
+                        color: '#333'
+                    }
+                },
+                xaxis: {
+                    title: 'Day',
+                    gridcolor: '#e0e0e0',
+                    showgrid: true,
+                    zeroline: false,
+                    range: state.xRange
+                },
+                yaxis: {
+                    title: metric,
+                    gridcolor: '#e0e0e0',
+                    showgrid: true,
+                    zeroline: false,
+                    range: state.yRange
+                },
+                legend: {
+                    x: 1.02,
+                    y: 1,
+                    xanchor: 'left',
+                    yanchor: 'top'
+                },
+                hovermode: 'closest',
+                plot_bgcolor: 'white',
+                paper_bgcolor: 'white',
+                margin: {
+                    l: 80,
+                    r: 200,
+                    t: 80,
+                    b: 80
+                }
+            };
+            
+            // Plot configuration
+            const config = {
+                responsive: true,
+                displayModeBar: true,
+                displaylogo: false,
+                toImageButtonOptions: {
+                    format: 'png',
+                    filename: `INHBE_DIO_${metric.replace(/[^a-zA-Z0-9]/g, '_')}`,
+                    height: 800,
+                    width: 1200,
+                    scale: 2
+                },
+                modeBarButtonsToRemove: ['lasso2d', 'select2d']
+            };
+            
+            Plotly.newPlot('plot', traces, layout, config);
+            
+            // Track legend clicks for visibility state
+            document.getElementById('plot').on('plotly_legendclick', (data) => {
+                const clickedGroup = groups[data.curveNumber];
+                state.visibilityState[clickedGroup] = !state.visibilityState[clickedGroup];
+                return false; // Let Plotly handle the visibility
+            });
+        }
+        
+        function applyAxisRanges() {
+            const xMin = document.getElementById('xMin').value;
+            const xMax = document.getElementById('xMax').value;
+            const yMin = document.getElementById('yMin').value;
+            const yMax = document.getElementById('yMax').value;
+            
+            if (xMin !== '' && xMax !== '') {
+                state.xRange = [parseFloat(xMin), parseFloat(xMax)];
+            }
+            if (yMin !== '' && yMax !== '') {
+                state.yRange = [parseFloat(yMin), parseFloat(yMax)];
+            }
+            
+            updatePlot();
+        }
+        
+        function resetAxisRanges() {
+            state.xRange = null;
+            state.yRange = null;
+            document.getElementById('xMin').value = '';
+            document.getElementById('xMax').value = '';
+            document.getElementById('yMin').value = '';
+            document.getElementById('yMax').value = '';
+            updatePlot();
+        }
+        
+        // Start the dashboard
+        if (typeof Plotly === 'undefined') {
+            document.body.innerHTML = '<div style="text-align: center; padding: 50px; color: red;">Error: Plotly.js failed to load. Please check your internet connection.</div>';
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
