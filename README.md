@@ -42,7 +42,7 @@ text
 
 Replace\ 
 • dashboard-name with the exact folder name you created in Step 2\
-• Your Dashboard Title with a descriptive, user-friendly title for display\
+• Your Dashboard Title with a descriptive, user-friendly title for display
 
 ```
 text
@@ -59,8 +59,8 @@ text
 4. Click the green "Commit changes" button
 
 ### Step 7: Access Your New Dashboard
-1. Wait 2-3 minutes for GitHub Pages to rebuild your site
-• Your new dashboard will be at: https://jared-d-sharp.github.io/Tx-Ops-Interactive-Charts//dashboard-name/\
+1. Wait 2-3 minutes for GitHub Pages to rebuild your site\
+• Your new dashboard will be at: https://jared-d-sharp.github.io/Tx-Ops-Interactive-Charts//dashboard-name/\  
 • Your landing page is at: https://jared-d-sharp.github.io/Tx-Ops-Interactive-Charts//
 
 ## 📁 Repository Structure
@@ -88,7 +88,7 @@ repository-name/\
 
 ## File Naming:
 • Always name dashboard files index.html (lowercase)\
-• Creates clean URLs: /sales-dashboard/ instead of /sales-dashboard.html\
+• Creates clean URLs: /sales-dashboard/ instead of /sales-dashboard.html
 
 ## 🔧 Troubleshooting
 • 404 Error When Accessing Dashboard:\
